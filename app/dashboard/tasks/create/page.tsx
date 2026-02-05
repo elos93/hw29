@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { addTask, Task } from "@/app/data/tasks";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,32 +17,31 @@ import {
 import { Label } from "@/components/ui/label";
 
 export default function CreateTaskPage() {
-  const [taskName, setTaskName] = useState("");
+  const router = useRouter();
+
+  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [project, setProject] = useState("");
-  const [status, setStatus] = useState("");
-  const [priority, setPriority] = useState("");
+  const [status, setStatus] = useState<Task["status"] | "">("");
+  const [priority, setPriority] = useState<Task["priority"] | "">("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newTask = {
-      taskName,
+    if (!name || !project || !status || !priority) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    addTask({
+      name,
       description,
       project,
       status,
       priority,
-    };
+    });
 
-    console.log("New Task:", newTask);
-    alert("Task created (mock)");
-
-    // reset (אופציונלי)
-    setTaskName("");
-    setDescription("");
-    setProject("");
-    setStatus("");
-    setPriority("");
+    router.push("/dashboard/tasks");
   };
 
   return (
@@ -47,30 +49,23 @@ export default function CreateTaskPage() {
       <h1 className="text-2xl font-bold">Create Task</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Task Name */}
         <div className="space-y-2">
-          <Label htmlFor="taskName">Task Name</Label>
+          <Label>Task Name</Label>
           <Input
-            id="taskName"
-            value={taskName}
-            onChange={(e) => setTaskName(e.target.value)}
-            placeholder="Enter task name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
           />
         </div>
 
-        {/* Description */}
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label>Description</Label>
           <Textarea
-            id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Task description"
           />
         </div>
 
-        {/* Project */}
         <div className="space-y-2">
           <Label>Project</Label>
           <Select value={project} onValueChange={setProject}>
@@ -85,10 +80,12 @@ export default function CreateTaskPage() {
           </Select>
         </div>
 
-        {/* Status */}
         <div className="space-y-2">
           <Label>Status</Label>
-          <Select value={status} onValueChange={setStatus}>
+          <Select
+            value={status}
+            onValueChange={(v) => setStatus(v as Task["status"])}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
@@ -100,10 +97,12 @@ export default function CreateTaskPage() {
           </Select>
         </div>
 
-        {/* Priority */}
         <div className="space-y-2">
           <Label>Priority</Label>
-          <Select value={priority} onValueChange={setPriority}>
+          <Select
+            value={priority}
+            onValueChange={(v) => setPriority(v as Task["priority"])}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select priority" />
             </SelectTrigger>

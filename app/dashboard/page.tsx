@@ -1,44 +1,37 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+
+import { useEffect, useState } from "react";
+import { getTasks } from "@/app/data/tasks";
 
 export default function DashboardPage() {
+  const [total, setTotal] = useState(0);
+  const [completed, setCompleted] = useState(0);
+  const [inProgress, setInProgress] = useState(0);
+
+  useEffect(() => {
+    const tasks = getTasks();
+    setTotal(tasks.length);
+    setCompleted(tasks.filter((t) => t.status === "Completed").length);
+    setInProgress(tasks.filter((t) => t.status === "In Progress").length);
+  }, []);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl font-bold">Dashboard</h1>
 
-        <Button asChild>
-          <Link href="/dashboard/tasks/create">Create Task</Link>
-        </Button>
-      </div>
-
-      {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">12</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Completed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-green-600">5</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>In Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-blue-600">7</p>
-          </CardContent>
-        </Card>
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className="border p-6 rounded">
+          <p>Total Tasks</p>
+          <p className="text-3xl font-bold">{total}</p>
+        </div>
+        <div className="border p-6 rounded">
+          <p>Completed</p>
+          <p className="text-3xl font-bold">{completed}</p>
+        </div>
+        <div className="border p-6 rounded">
+          <p>In Progress</p>
+          <p className="text-3xl font-bold">{inProgress}</p>
+        </div>
       </div>
     </div>
   );
