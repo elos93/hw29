@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 
-import { getTasks, Task } from "@/app/data/tasks";
+import { getTasks, deleteTask, Task } from "@/app/data/tasks";
 
 type Status = "All" | "Completed" | "In Progress";
 
@@ -32,43 +32,28 @@ export default function TasksPage() {
   const filteredTasks =
     status === "All" ? tasks : tasks.filter((t) => t.status === status);
 
-  if (filteredTasks.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between">
-          <h1 className="text-2xl font-bold">Tasks</h1>
-          <Button asChild>
-            <Link href="/dashboard/tasks/create">Create Task</Link>
-          </Button>
-        </div>
-
-        <Tabs value={status} onValueChange={(v) => setStatus(v as Status)}>
-          <TabsList>
-            <TabsTrigger value="All">All</TabsTrigger>
-            <TabsTrigger value="Completed">Completed</TabsTrigger>
-            <TabsTrigger value="In Progress">In Progress</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        <EmptyState
-          title="No tasks found"
-          description="You haven’t created any tasks yet."
-          actionLabel="Create Task"
-          onAction={() => router.push("/dashboard/tasks/create")}
-        />
-      </div>
-    );
-  }
+  const handleDelete = (task: Task) => {
+    if (confirm(`Delete task "${task.name}"? This action cannot be undone.`)) {
+      deleteTask(task.id);
+      setTasks(getTasks());
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between">
-        <h1 className="text-2xl font-bold">Tasks</h1>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Tasks</h1>
+          <p className="text-muted-foreground">Manage and track your tasks</p>
+        </div>
+
         <Button asChild>
           <Link href="/dashboard/tasks/create">Create Task</Link>
         </Button>
       </div>
 
+      {/* Tabs */}
       <Tabs value={status} onValueChange={(v) => setStatus(v as Status)}>
         <TabsList>
           <TabsTrigger value="All">All</TabsTrigger>
@@ -77,26 +62,51 @@ export default function TasksPage() {
         </TabsList>
       </Tabs>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Priority</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredTasks.map((t, i) => (
-            <TableRow key={i}>
-              <TableCell>{t.name}</TableCell>
-              <TableCell>{t.project}</TableCell>
-              <TableCell>{t.status}</TableCell>
-              <TableCell>{t.priority}</TableCell>
+      {/* Empty State */}
+      {filteredTasks.length === 0 ? (
+        <EmptyState
+          title="No tasks found"
+          description={
+            status === "All"
+              ? "You haven’t created any tasks yet."
+              : `No tasks with status "${status}".`
+          }
+          actionLabel="Create Task"
+          onAction={() => router.push("/dashboard/tasks/create")}
+        />
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Project</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+
+          <TableBody>
+            {filteredTasks.map((task) => (
+              <TableRow key={task.id}>
+                <TableCell className="font-medium">{task.name}</TableCell>
+                <TableCell>{task.project}</TableCell>
+                <TableCell>{task.status}</TableCell>
+                <TableCell>{task.priority}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(task)}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 }

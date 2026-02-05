@@ -1,4 +1,5 @@
 export type Task = {
+  id: string;
   name: string;
   description?: string;
   project: string;
@@ -18,7 +19,17 @@ export function saveTasks(tasks: Task[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 }
 
-export function addTask(task: Task) {
+export function addTask(task: Omit<Task, "id">) {
   const tasks = getTasks();
-  saveTasks([...tasks, task]);
+  const newTask: Task = {
+    ...task,
+    id: crypto.randomUUID(),
+  };
+  saveTasks([...tasks, newTask]);
+}
+
+export function deleteTask(taskId: string) {
+  const tasks = getTasks();
+  const updated = tasks.filter((t) => t.id !== taskId);
+  saveTasks(updated);
 }
